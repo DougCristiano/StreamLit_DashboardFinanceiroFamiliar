@@ -596,6 +596,14 @@ elif st.session_state.get('processed_data') is not None and not st.session_state
         categorias_selecionadas = st.multiselect("Filtrar por Categoria(s)", options=categorias_disponiveis)
         min_gasto = float(despesas_df['Gastos'].min()) if not despesas_df.empty else 0.0
         max_gasto = float(despesas_df['Gastos'].max()) if not despesas_df.empty else 1.0
+        # --- INÍCIO DA CORREÇÃO ---
+        # Garante que o valor máximo nunca seja menor que o mínimo.
+        # Isso previne o erro do st.slider em casos de borda.
+        if max_gasto < min_gasto or max_gasto == min_gasto:
+            max_gasto = 99999.99
+        if min_gasto < 0:
+            min_gasto = 0.0
+        # --- FIM DA CORREÇÃO ---
         intervalo_gasto = st.slider("Filtrar por Valor do Gasto (R$)", min_value=min_gasto, max_value=max_gasto, value=(min_gasto, max_gasto))
 
         df_filtrado = despesas_df.copy()
