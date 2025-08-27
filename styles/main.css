@@ -1,0 +1,19 @@
+div.stButton > button[kind="secondary"] {
+    background-color: #4CAF50;
+    color: white;
+    border: 1px solid #4CAF50;
+}
+div.stButton > button[kind="secondary"]:hover {
+    background-color: #45a049;
+    color: white;
+    border-color: #45a049;
+}
+div.stButton > button[kind="secondary"]:active {
+    background-color: #3e8e41;
+    color: white;
+    border-color: #3e8e41;
+}
+div.stButton > button[kind="secondary"]:focus:not(:active) {
+    border-color: #4CAF50;
+    color: white;
+}
