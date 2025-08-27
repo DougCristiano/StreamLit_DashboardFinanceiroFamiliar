@@ -1,0 +1,13 @@
+.stApp { background-color: #0E1117; color: #FAFAFA !important; }
+h1, h2, h3, h4, h5, h6, .st-emotion-cache-16txtl3 { color: #FAFAFA !important; }
+[data-testid="stHeader"] { background-color: transparent; }
+[data-testid="stSidebar"] { background-color: #1E1E1E; }
+p, label, .st-emotion-cache-1y4p88q { color: #FAFAFA !important; }
+.st-emotion-cache-ue6h4q, .st-emotion-cache-ltfnpr, [data-testid="stTextInput"] input { color: #FFFFFF !important; }
+.st-emotion-cache-7ym5gk, .st-emotion-cache-1r6slb0 { background-color: #262730; }
+[data-testid="stForm"] [data-testid="stButton"] button, [data-testid="stSidebar"] [data-testid="stButton"] button {
+    background-color: #31333F; color: #FAFAFA; border: 1px solid #31333F;
+}
+[data-testid="stForm"] [data-testid="stButton"] button:hover, [data-testid="stSidebar"] [data-testid="stButton"] button:hover {
+    background-color: #404251; border-color: #404251;
+}
