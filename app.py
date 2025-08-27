@@ -69,6 +69,8 @@ if 'categories' not in st.session_state:
     })
 if 'processed_data' not in st.session_state:
     st.session_state.processed_data = None
+if 'df_from_upload' not in st.session_state: # NOVO: State para guardar dados do arquivo
+    st.session_state.df_from_upload = None
 if 'active_tab' not in st.session_state:
     st.session_state.active_tab = "📊 Visão Geral Mensal"
 
@@ -93,6 +95,45 @@ for key, value in default_configs.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
+# --- NOVA FUNÇÃO DE PROCESSAMENTO CENTRALIZADO ---
+def processar_dados():
+    """
+    Combina dados do arquivo carregado e despesas manuais,
+    processa-os e armazena em st.session_state.processed_data.
+    """
+    dfs_to_combine = []
+
+    # Adiciona dados do arquivo se existirem
+    if st.session_state.df_from_upload is not None:
+        df_extrato = st.session_state.df_from_upload.copy()
+        df_extrato.rename(columns={'date': 'Data', 'title': 'Descrição', 'amount': 'Valor'}, inplace=True)
+        df_extrato = df_extrato[~df_extrato['Descrição'].str.contains("pagamento recebido", case=False, na=False)]
+        dfs_to_combine.append(df_extrato)
+
+    # Adiciona dados manuais se existirem
+    if st.session_state.despesas_manuais:
+        df_manuais = pd.DataFrame(st.session_state.despesas_manuais)
+        dfs_to_combine.append(df_manuais)
+
+    # Se não houver dados, limpa o state e encerra
+    if not dfs_to_combine:
+        st.session_state.processed_data = None
+        return
+
+    # Combina e processa os dados
+    df_completo = pd.concat(dfs_to_combine, ignore_index=True)
+    df_completo['Data'] = pd.to_datetime(df_completo['Data'], errors='coerce')
+    df_completo.dropna(subset=['Data'], inplace=True)
+    df_completo['Valor'] = pd.to_numeric(df_completo['Valor'], errors='coerce')
+    df_completo.dropna(subset=['Valor'], inplace=True)
+
+    despesas_df = df_completo[df_completo['Valor'] != 0].copy()
+    despesas_df['Gastos'] = despesas_df['Valor'].abs()
+    despesas_df['Categoria'] = despesas_df['Descrição'].apply(lambda desc: categorizar_despesa(desc, st.session_state.categories))
+    despesas_df['AnoMes'] = despesas_df['Data'].dt.to_period('M').astype(str)
+    
+    st.session_state.processed_data = despesas_df
+
 # --- 5. TÍTULO E DESCRIÇÃO ---
 st.title("👨‍👩‍👧‍👦 Dashboard Financeiro Familiar")
 st.write("Faça o upload do extrato mensal da família para análise e planeje seus gastos.")
@@ -103,6 +144,7 @@ st.session_state.theme = st.sidebar.selectbox(
     ["Claro (Padrão)", "Escuro", "Nubank"]
 )
 
+# ... (o restante do código CSS permanece o mesmo)
 green_button_css = """
 <style>
 div.stButton > button[kind="secondary"] {
@@ -158,6 +200,7 @@ if st.session_state.theme == "Nubank":
 elif st.session_state.theme == "Escuro":
     st.markdown(dark_theme_css, unsafe_allow_html=True)
 
+
 st.sidebar.header("Área de Controles")
 uploaded_file = st.sidebar.file_uploader("Carregue seu extrato (CSV/XLSX)", type=["csv", "xlsx"])
 
@@ -201,14 +244,19 @@ with st.sidebar.form("form_despesa_manual", clear_on_submit=True):
     if submitted and desc_manual and valor_manual_str:
         try:
             valor_manual = float(valor_manual_str.replace(",", "."))
+            # ALTERADO: A lógica agora chama a função de processamento
             st.session_state.despesas_manuais.append({"Data": datetime.now(), "Descrição": desc_manual, "Valor": -valor_manual})
-            st.session_state.processed_data = None
+            processar_dados() # Chama a função para reprocessar tudo
             st.sidebar.success("Despesa adicionada!")
+            st.rerun() # Roda o app de novo para atualizar a tela
         except ValueError:
             st.sidebar.error("Valor inválido. Por favor, insira apenas números.")
 
 # --- 7. PROCESSAMENTO DOS DADOS ---
+# ALTERADO: A lógica de processamento foi movida para a função `processar_dados`
+# e é chamada aqui apenas quando um novo arquivo é carregado.
 if uploaded_file is not None:
+    # Verifica se o arquivo é diferente do último carregado para não reprocessar sem necessidade
     if st.session_state.get('last_uploaded_file') != uploaded_file.name:
         try:
             if uploaded_file.name.endswith('.csv'):
@@ -217,23 +265,14 @@ if uploaded_file is not None:
                 df_extrato = pd.read_excel(uploaded_file)
             
             ensure_required_cols(df_extrato)
-            df_extrato.rename(columns={'date': 'Data', 'title': 'Descrição', 'amount': 'Valor'}, inplace=True)
-            
-            df_extrato = df_extrato[~df_extrato['Descrição'].str.contains("pagamento recebido", case=False, na=False)]
-            df_manuais = pd.DataFrame(st.session_state.despesas_manuais)
-            df_completo = pd.concat([df_extrato, df_manuais], ignore_index=True)
-            df_completo['Data'] = pd.to_datetime(df_completo['Data'], errors='coerce')
-            df_completo.dropna(subset=['Data'], inplace=True)
-            df_completo['Valor'] = pd.to_numeric(df_completo['Valor'], errors='coerce')
-            df_completo.dropna(subset=['Valor'], inplace=True)
-            despesas_df = df_completo[df_completo['Valor'] != 0].copy()
-            despesas_df['Gastos'] = despesas_df['Valor'].abs()
-            despesas_df['Categoria'] = despesas_df['Descrição'].apply(lambda desc: categorizar_despesa(desc, st.session_state.categories))
-            despesas_df['AnoMes'] = despesas_df['Data'].dt.to_period('M').astype(str)
-            st.session_state.processed_data = despesas_df
+            st.session_state.df_from_upload = df_extrato # Armazena o DF bruto
             st.session_state.last_uploaded_file = uploaded_file.name
+            processar_dados() # Chama a função para processar os dados
+            st.rerun() # Garante que a interface seja atualizada com os novos dados
+            
         except Exception as e:
             st.error(f"Ocorreu um erro ao processar o arquivo: {e}")
+            st.session_state.df_from_upload = None
             st.session_state.processed_data = None
             st.session_state.last_uploaded_file = None
 
@@ -241,8 +280,12 @@ if uploaded_file is not None:
 tab_options = ["📊 Visão Geral Mensal", "🏷️ Análise por Categoria", "📋 Extrato Detalhado", "🔁 Despesas Recorrentes", "🔮 Orçamento e Planejamento", "⚙️ Configurações"]
 st.radio("Navegação", options=tab_options, key="active_tab", horizontal=True, label_visibility="collapsed")
 
+
 # --- 9. CONTEÚDO DAS ABAS ---
+# ALTERADO: A condição agora verifica se 'processed_data' não é nulo E não está vazio.
+# Isso garante que o dashboard apareça mesmo que haja apenas despesas manuais.
 if st.session_state.active_tab == "⚙️ Configurações":
+    # ... (código da aba Configurações permanece o mesmo)
     st.header("⚙️ Configurações de Aparência")
     st.subheader("Estilo dos Gráficos")
     st.session_state.chart_theme = st.selectbox(
@@ -277,6 +320,7 @@ if st.session_state.active_tab == "⚙️ Configurações":
         st.rerun()
 
 elif st.session_state.active_tab == "🔁 Despesas Recorrentes":
+    # ... (código da aba Despesas Recorrentes permanece o mesmo)
     st.header("🔁 Despesas Recorrentes")
     st.write("Cadastre aqui suas assinaturas e despesas que se repetem todos os meses. Elas serão usadas no planejamento do orçamento.")
 
@@ -294,6 +338,7 @@ elif st.session_state.active_tab == "🔁 Despesas Recorrentes":
     st.metric("Total de Despesas Recorrentes Mensais", f"R$ {total_recorrente:,.2f}")
 
 elif st.session_state.active_tab == "🔮 Orçamento e Planejamento":
+    # ... (código da aba Orçamento e Planejamento, com uma pequena correção de segurança)
     st.header("🔮 Orçamento e Planejamento Mensal")
 
     with st.expander("Defina o Orçamento Mensal por Categoria", expanded=True):
@@ -324,8 +369,9 @@ elif st.session_state.active_tab == "🔮 Orçamento e Planejamento":
         st.metric("Total Orçado para Despesas", f"R$ {total_orcado:,.2f}")
 
     st.write("---")
-
-    if st.session_state.processed_data is not None:
+    
+    # Adicionada verificação para evitar erro se processed_data for None
+    if st.session_state.get('processed_data') is not None and not st.session_state.processed_data.empty:
         st.subheader("Análise do Orçamento vs. Gastos Reais")
         df_analise = st.session_state.processed_data
         meses_disponiveis = sorted(df_analise['AnoMes'].unique(), reverse=True)
@@ -351,7 +397,7 @@ elif st.session_state.active_tab == "🔮 Orçamento e Planejamento":
             fig_orcamento.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color=font_color)
             st.plotly_chart(fig_orcamento, use_container_width=True)
         else:
-            st.info("Nenhum mês para análise. Carregue um extrato.")
+            st.info("Nenhum mês para análise. Carregue um extrato ou adicione despesas.")
 
     st.write("---")
 
@@ -441,9 +487,10 @@ elif st.session_state.active_tab == "🔮 Orçamento e Planejamento":
     else:
         st.success(f"Com base no planejamento, você terá R$ {saldo_previsto:,.2f} disponíveis para as despesas variáveis (dentro do orçamento).")
 
-elif st.session_state.processed_data is not None:
+elif st.session_state.get('processed_data') is not None and not st.session_state.processed_data.empty:
     despesas_df = st.session_state.processed_data
-
+    
+    # ... (o restante do código das abas principais permanece o mesmo, com uma pequena correção de bug na linha 621)
     st.sidebar.subheader("Inserir Renda do Mês Analisado")
     with st.sidebar.form("form_rendas"):
         meses_unicos = sorted(despesas_df['AnoMes'].unique())
@@ -483,7 +530,7 @@ elif st.session_state.processed_data is not None:
             paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color=font_color,
             font_family=st.session_state.chart_font, title_font_size=st.session_state.chart_title_size,
             xaxis=dict(tickfont=dict(size=st.session_state.chart_tick_size)),
-            yaxis=dict(tickfont=dict(size=_state.chart_tick_size)),
+            yaxis=dict(tickfont=dict(size=st.session_state.chart_tick_size)), # Correção de bug: _state para st.session_state
             legend=dict(font=dict(size=st.session_state.chart_legend_size))
         )
         st.plotly_chart(fig_mensal, use_container_width=True)
@@ -587,4 +634,4 @@ elif st.session_state.processed_data is not None:
             st.rerun()
 
 else:
-    st.info("⬅️ Por favor, carregue o extrato da família na barra lateral para iniciar a análise.")
+    st.info("⬅️ Por favor, carregue o extrato da família na barra lateral ou adicione uma despesa manual para iniciar a análise.")
