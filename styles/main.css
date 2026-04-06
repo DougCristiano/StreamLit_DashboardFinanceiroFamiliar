@@ -1,19 +1,498 @@
-div.stButton > button[kind="secondary"] {
-    background-color: #4CAF50;
-    color: white;
-    border: 1px solid #4CAF50;
+/* ============================================================
+   PROFESSIONAL LIGHT THEME — Dashboard Financeiro Familiar
+   Clean, minimal, Power BI-inspired
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --bg-page: #F5F7FA;
+    --bg-white: #FFFFFF;
+    --bg-sidebar: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --bg-card-hover: #F8FAFC;
+    --bg-input: #F5F7FA;
+    --text-dark: #1A1A2E;
+    --text-body: #334155;
+    --text-muted: #94A3B8;
+    --text-label: #64748B;
+    --accent: #1565C0;
+    --accent-light: #E3F2FD;
+    --accent-hover: #1E88E5;
+    --green: #16A34A;
+    --green-light: #DCFCE7;
+    --red: #DC2626;
+    --red-light: #FEE2E2;
+    --orange: #EA580C;
+    --orange-light: #FFF7ED;
+    --purple: #7C3AED;
+    --border: #E2E8F0;
+    --border-light: #F1F5F9;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
-div.stButton > button[kind="secondary"]:hover {
-    background-color: #45a049;
-    color: white;
-    border-color: #45a049;
+
+/* --- Global --- */
+html, body, [data-testid="stAppViewContainer"] {
+    font-family: var(--font) !important;
 }
-div.stButton > button[kind="secondary"]:active {
-    background-color: #3e8e41;
-    color: white;
-    border-color: #3e8e41;
+
+.main .block-container {
+    padding: 1.5rem 2rem 2rem 2rem;
+    max-width: 100%;
 }
-div.stButton > button[kind="secondary"]:focus:not(:active) {
-    border-color: #4CAF50;
-    color: white;
+
+/* --- Typography --- */
+h1 {
+    font-family: var(--font) !important;
+    font-weight: 700 !important;
+    font-size: 1.6rem !important;
+    color: var(--text-dark) !important;
+    letter-spacing: -0.03em;
+}
+
+h2, h3, h5 {
+    font-family: var(--font) !important;
+    font-weight: 600 !important;
+    color: var(--text-dark) !important;
+}
+
+p, span, label {
+    font-family: var(--font) !important;
+}
+
+/* --- Sidebar --- */
+[data-testid="stSidebar"] {
+    background: var(--bg-sidebar) !important;
+    border-right: 1px solid var(--border) !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stMetric"] {
+    background: var(--accent-light) !important;
+    border: 1px solid #BBDEFB !important;
+    border-left: 4px solid var(--accent) !important;
+}
+
+/* --- Metric Cards (KPIs) --- */
+[data-testid="stMetric"] {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    padding: 16px 20px !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.2s ease;
+}
+
+[data-testid="stMetric"]:hover {
+    box-shadow: var(--shadow) !important;
+    transform: translateY(-1px);
+}
+
+[data-testid="stMetricLabel"] {
+    font-weight: 600 !important;
+    font-size: 0.7rem !important;
+    color: var(--text-muted) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+[data-testid="stMetricValue"] {
+    font-weight: 700 !important;
+    font-size: 1.4rem !important;
+    color: var(--text-dark) !important;
+}
+
+/* KPI colored left borders */
+[data-testid="stHorizontalBlock"] > div:nth-child(1) [data-testid="stMetric"] {
+    border-left: 4px solid var(--green) !important;
+}
+[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stMetric"] {
+    border-left: 4px solid var(--red) !important;
+}
+[data-testid="stHorizontalBlock"] > div:nth-child(3) [data-testid="stMetric"] {
+    border-left: 4px solid var(--accent) !important;
+}
+[data-testid="stHorizontalBlock"] > div:nth-child(4) [data-testid="stMetric"] {
+    border-left: 4px solid var(--orange) !important;
+}
+
+/* --- Tabs --- */
+.stTabs [data-baseweb="tab-list"] {
+    background: var(--bg-white) !important;
+    border-radius: var(--radius) !important;
+    padding: 4px !important;
+    gap: 2px !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background: transparent !important;
+    color: var(--text-label) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 10px 20px !important;
+    font-weight: 500 !important;
+    font-size: 0.85rem !important;
+    border: none !important;
+    transition: all 0.15s ease;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background: var(--bg-page) !important;
+    color: var(--text-dark) !important;
+}
+
+.stTabs [aria-selected="true"] {
+    background: var(--accent) !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+.stTabs [data-baseweb="tab-highlight"] {
+    background-color: transparent !important;
+}
+
+.stTabs [data-baseweb="tab-border"] {
+    display: none !important;
+}
+
+/* --- Forms --- */
+[data-testid="stForm"] {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    padding: 20px !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+/* --- Inputs --- */
+[data-baseweb="input"] {
+    border-radius: var(--radius-sm) !important;
+}
+
+[data-baseweb="input"]:focus-within {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1) !important;
+}
+
+/* --- Selectbox --- */
+[data-baseweb="select"] > div {
+    border-radius: var(--radius-sm) !important;
+}
+
+[data-baseweb="popover"] {
+    border-radius: var(--radius-sm) !important;
+    box-shadow: var(--shadow-lg) !important;
+    border: 1px solid var(--border) !important;
+}
+
+/* --- Buttons --- */
+.stButton > button {
+    border-radius: var(--radius-sm) !important;
+    font-weight: 500 !important;
+    font-family: var(--font) !important;
+    padding: 8px 16px !important;
+    transition: all 0.15s ease;
+    border: 1px solid var(--border) !important;
+}
+
+.stButton > button:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow) !important;
+}
+
+[data-testid="stFormSubmitButton"] > button {
+    background: var(--accent) !important;
+    color: white !important;
+    border: none !important;
+    font-weight: 600 !important;
+    border-radius: var(--radius-sm) !important;
+    box-shadow: 0 2px 4px rgba(21, 101, 192, 0.2) !important;
+}
+
+[data-testid="stFormSubmitButton"] > button:hover {
+    background: var(--accent-hover) !important;
+    box-shadow: 0 4px 12px rgba(21, 101, 192, 0.3) !important;
+}
+
+/* --- Plotly Charts --- */
+[data-testid="stPlotlyChart"] {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    padding: 12px !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+/* --- DataFrames --- */
+[data-testid="stDataFrame"] {
+    border-radius: var(--radius) !important;
+    box-shadow: var(--shadow-sm) !important;
+    border: 1px solid var(--border) !important;
+    overflow: hidden;
+}
+
+/* --- Expander --- */
+[data-testid="stExpander"] {
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+/* --- Dividers --- */
+hr {
+    border-color: var(--border-light) !important;
+}
+
+/* --- Success/Warning/Error Messages --- */
+[data-testid="stAlert"] {
+    border-radius: var(--radius) !important;
+    border-left: 4px solid !important;
+}
+
+[data-testid="stAlert"] svg {
+    margin-right: 8px;
+}
+
+/* Success (green) */
+.stAlert[kind="success"] {
+    border-left-color: var(--green) !important;
+    background: var(--green-light) !important;
+}
+
+/* Warning (orange) */
+.stAlert[kind="warning"] {
+    border-left-color: var(--orange) !important;
+    background: var(--orange-light) !important;
+}
+
+/* Error (red) */
+.stAlert[kind="error"] {
+    border-left-color: var(--red) !important;
+    background: var(--red-light) !important;
+}
+
+/* Info (blue) */
+.stAlert[kind="info"] {
+    border-left-color: var(--accent) !important;
+    background: var(--accent-light) !important;
+}
+
+/* --- Caption & Helper Text --- */
+.stCaption {
+    color: var(--text-muted) !important;
+    font-size: 0.75rem !important;
+    font-weight: 400 !important;
+}
+
+/* --- Code Blocks --- */
+code {
+    background: var(--bg-input) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: var(--radius-sm) !important;
+    color: var(--accent) !important;
+    padding: 2px 6px !important;
+    font-size: 0.85em !important;
+}
+
+/* --- File Uploader --- */
+[data-testid="stFileUploadDropzone"] {
+    border: 2px dashed var(--border) !important;
+    border-radius: var(--radius) !important;
+    background: var(--bg-page) !important;
+    padding: 20px !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+[data-testid="stFileUploadDropzone"]:hover {
+    border-color: var(--accent) !important;
+    background: var(--accent-light) !important;
+}
+
+/* --- Column Headers --- */
+.stDataFrame thead {
+    background: var(--bg-page) !important;
+    color: var(--text-dark) !important;
+    font-weight: 600 !important;
+}
+
+.stDataFrame tbody tr:hover {
+    background: var(--bg-card-hover) !important;
+}
+
+/* --- Markdown Content --- */
+.stMarkdown h1 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-light);
+}
+
+.stMarkdown h2 {
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.stMarkdown h3 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.stMarkdown a {
+    color: var(--accent) !important;
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.stMarkdown a:hover {
+    border-bottom-color: var(--accent);
+}
+
+/* --- Column Container --- */
+[data-testid="column"] {
+    transition: transform 0.15s ease;
+}
+
+/* --- Dark Mode Support (future) --- */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-page: #0F172A;
+        --bg-white: #1E293B;
+        --bg-sidebar: #1E293B;
+        --bg-card: #334155;
+        --bg-card-hover: #475569;
+        --bg-input: #1E293B;
+        --text-dark: #F1F5F9;
+        --text-body: #CBD5E1;
+        --text-muted: #94A3B8;
+        --text-label: #CBD5E1;
+        --border: #64748B;
+        --border-light: #475569;
+        --accent-light: rgba(21, 101, 192, 0.15);
+        --orange-light: rgba(234, 88, 12, 0.1);
+        --red-light: rgba(220, 38, 38, 0.1);
+        --green-light: rgba(22, 163, 74, 0.1);
+    }
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    .main .block-container {
+        padding: 1rem 1.5rem;
+    }
+    
+    h1 {
+        font-size: 1.4rem !important;
+    }
+    
+    [data-testid="stMetric"] {
+        padding: 12px 16px !important;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        padding: 8px 12px !important;
+        font-size: 0.75rem !important;
+    }
+}
+
+/* --- Print Styles --- */
+@media print {
+    [data-testid="stSidebar"],
+    [data-testid="stForm"],
+    .stButton {
+        display: none;
+    }
+    
+    body {
+        background: white !important;
+    }
+}
+
+/* --- Multiselect tags --- */
+[data-baseweb="tag"] {
+    background: var(--accent-light) !important;
+    color: var(--accent) !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+}
+
+/* --- File Uploader Fix --- */
+[data-testid="stFileUploader"] {
+    border-radius: var(--radius) !important;
+}
+
+[data-testid="stFileUploader"] section {
+    padding: 16px !important;
+    border: 2px dashed var(--border) !important;
+    border-radius: var(--radius) !important;
+    background: var(--bg-page) !important;
+    transition: border-color 0.2s ease;
+}
+
+[data-testid="stFileUploader"] section:hover {
+    border-color: var(--accent) !important;
+}
+
+/* Hide the broken icon text in upload button */
+[data-testid="stFileUploader"] button span span {
+    display: none !important;
+}
+
+/* Fix Expander icon text rendering as text */
+[data-testid="stExpander"] summary span[data-testid="stIconMaterial"],
+[data-testid="stExpander"] details summary span.material-symbols-rounded {
+    display: none !important;
+}
+
+/* --- Alerts --- */
+[data-testid="stAlert"] {
+    border-radius: var(--radius-sm) !important;
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-page);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* --- Fade in animation --- */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.main .block-container {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* --- Hide deploy button for cleaner look --- */
+[data-testid="stToolbar"] {
+    display: none !important;
+}
+
+/* --- Fix Material icon rendering as text everywhere --- */
+span.material-symbols-rounded {
+    font-family: 'Material Symbols Rounded' !important;
+    -webkit-font-feature-settings: 'liga' !important;
+    font-feature-settings: 'liga' !important;
 }
