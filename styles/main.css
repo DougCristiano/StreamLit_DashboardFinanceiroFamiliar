@@ -6,19 +6,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --bg-page: #F5F7FA;
+    --bg-page: #F8F9FA;
     --bg-white: #FFFFFF;
     --bg-sidebar: #FFFFFF;
     --bg-card: #FFFFFF;
     --bg-card-hover: #F8FAFC;
-    --bg-input: #F5F7FA;
-    --text-dark: #1A1A2E;
-    --text-body: #334155;
-    --text-muted: #94A3B8;
-    --text-label: #64748B;
-    --accent: #1565C0;
-    --accent-light: #E3F2FD;
-    --accent-hover: #1E88E5;
+    --bg-input: #F8F9FA;
+    --text-dark: #111827;
+    --text-body: #374151;
+    --text-muted: #9CA3AF;
+    --text-label: #6B7280;
+    /* Neutral accent — overridden by theme injection in app.py */
+    --accent: #4B5563;
+    --accent-light: #F3F4F6;
+    --accent-hover: #374151;
     --green: #16A34A;
     --green-light: #DCFCE7;
     --red: #DC2626;
@@ -26,8 +27,8 @@
     --orange: #EA580C;
     --orange-light: #FFF7ED;
     --purple: #7C3AED;
-    --border: #E2E8F0;
-    --border-light: #F1F5F9;
+    --border: #E5E7EB;
+    --border-light: #F3F4F6;
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
     --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
     --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.06);

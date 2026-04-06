@@ -37,6 +37,11 @@ def processar_dados() -> None:
         df_manual = pd.DataFrame(st.session_state.transacoes)
         dfs.append(df_manual)
 
+    # 3. Transações importadas persistidas
+    if st.session_state.get("transacoes_importadas"):
+        df_importadas = pd.DataFrame(st.session_state.transacoes_importadas)
+        dfs.append(df_importadas)
+
     if not dfs:
         st.session_state.df_transacoes = None
         return

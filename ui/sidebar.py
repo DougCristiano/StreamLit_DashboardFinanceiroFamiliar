@@ -5,6 +5,7 @@ Handles CSV/XLSX file uploads, column mapping interface, and data processing tri
 
 import streamlit as st
 import pandas as pd
+from utils.helpers import salvar_transacoes_importadas
 from utils.processing import processar_dados
 
 
@@ -147,19 +148,42 @@ def render_sidebar() -> None:
             if date_col and title_col and amount_col:
                 with st.sidebar.spinner("⏳ Processando..."):
                     try:
-                        st.session_state.column_map = {
-                            "date": date_col,
-                            "title": title_col,
-                            "amount": amount_col,
-                        }
                         df_mapped = st.session_state.raw_df[
                             [date_col, title_col, amount_col]
                         ].copy()
-                        df_mapped.columns = ["date", "title", "amount"]
-                        st.session_state.df_from_upload = df_mapped
+                        df_mapped.columns = ["Data", "Descrição", "Valor"]
+                        df_mapped["Pessoa"] = "Arquivo"
+                        df_mapped["Categoria_Manual"] = None
+
+                        importados = st.session_state.get("transacoes_importadas", [])
+
+                        def _row_key(row: dict) -> tuple:
+                            valor_raw = str(row.get("Valor", "0")).replace(",", ".")
+                            valor_num = pd.to_numeric(valor_raw, errors="coerce")
+                            return (
+                                str(row.get("Data", "")).strip(),
+                                str(row.get("Descrição", "")).strip().lower(),
+                                float(valor_num) if pd.notna(valor_num) else 0.0,
+                            )
+
+                        existing_keys = {_row_key(item) for item in importados}
+                        novos = 0
+
+                        for row in df_mapped.to_dict("records"):
+                            key = _row_key(row)
+                            if key not in existing_keys:
+                                importados.append(row)
+                                existing_keys.add(key)
+                                novos += 1
+
+                        st.session_state.transacoes_importadas = importados
+                        salvar_transacoes_importadas()
+                        st.session_state.df_from_upload = None
                         processar_dados()
                         st.session_state.raw_df = None
-                        st.sidebar.success("✅ Extrato processado com sucesso!")
+                        st.sidebar.success(
+                            f"✅ Extrato processado com sucesso! Novos registros: {novos}"
+                        )
                         st.rerun()
                     except Exception as e:
                         st.sidebar.error(f"❌ Erro ao processar: {str(e)[:100]}")
@@ -172,3 +196,16 @@ def render_sidebar() -> None:
     if st.session_state.df_transacoes is not None:
         n_transacoes = len(st.session_state.df_transacoes)
     st.sidebar.metric("Total de Transações", n_transacoes)
+    st.sidebar.caption("💾 Seus dados são salvos automaticamente neste dispositivo.")
+
+    n_importadas = len(st.session_state.get("transacoes_importadas", []))
+    st.sidebar.metric("Transações Importadas", n_importadas)
+
+    if n_importadas > 0 and st.sidebar.button(
+        "🗑️ Limpar Importadas", use_container_width=True
+    ):
+        st.session_state.transacoes_importadas = []
+        salvar_transacoes_importadas()
+        processar_dados()
+        st.sidebar.success("Transações importadas foram removidas.")
+        st.rerun()

@@ -15,6 +15,12 @@ from typing import Any, Dict, List
 CATEGORIES_FILE: str = "categorias.json"
 MEMBROS_FILE: str = "membros.json"
 TRANSACOES_FILE: str = "transacoes.json"
+TRANSACOES_IMPORTADAS_FILE: str = "transacoes_importadas.json"
+DIVIDAS_FILE: str = "dividas.json"
+INVESTIMENTOS_FILE: str = "investimentos.json"
+METAS_RESERVA_FILE: str = "metas_reserva.json"
+ORCAMENTO_FILE: str = "orcamento_mensal.json"
+RECORRENTES_FILE: str = "despesas_recorrentes.json"
 
 # --- Utility Functions ---
 
@@ -48,8 +54,11 @@ def load_json(file: str, default: Any) -> Any:
         Parsed JSON content or default value.
     """
     if os.path.exists(file):
-        with open(file, "r", encoding="utf-8") as f:
-            return json.load(f)
+        try:
+            with open(file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return default
     return default
 
 
@@ -108,6 +117,108 @@ def carregar_transacoes() -> List[Dict[str, Any]]:
     return load_json(TRANSACOES_FILE, [])
 
 
+def salvar_transacoes_importadas() -> None:
+    """Persist imported transactions list to disk from session state."""
+    save_json(TRANSACOES_IMPORTADAS_FILE, st.session_state.transacoes_importadas)
+
+
+def carregar_transacoes_importadas() -> List[Dict[str, Any]]:
+    """Load imported transactions from disk.
+
+    Returns:
+        List of imported transaction dictionaries.
+    """
+    return load_json(TRANSACOES_IMPORTADAS_FILE, [])
+
+
+def salvar_orcamento_mensal() -> None:
+    """Persist monthly budget dictionary to disk from session state."""
+    save_json(ORCAMENTO_FILE, st.session_state.orcamento_mensal)
+
+
+def carregar_orcamento_mensal() -> Dict[str, float]:
+    """Load monthly budget dictionary from disk.
+
+    Returns:
+        Dictionary with category budgets.
+    """
+    data = load_json(ORCAMENTO_FILE, {})
+    if not isinstance(data, dict):
+        return {}
+    output: Dict[str, float] = {}
+    for key, value in data.items():
+        try:
+            output[str(key)] = float(value)
+        except (TypeError, ValueError):
+            continue
+    return output
+
+
+def salvar_despesas_recorrentes() -> None:
+    """Persist recurring expenses table to disk from session state."""
+    records = st.session_state.despesas_recorrentes.to_dict("records")
+    save_json(RECORRENTES_FILE, records)
+
+
+def carregar_despesas_recorrentes() -> pd.DataFrame:
+    """Load recurring expenses table from disk.
+
+    Returns:
+        DataFrame with recurring expenses columns.
+    """
+    records = load_json(RECORRENTES_FILE, [])
+    if not isinstance(records, list):
+        records = []
+    df = pd.DataFrame(records)
+    expected_cols = ["Descrição", "Valor", "Categoria"]
+    for col in expected_cols:
+        if col not in df.columns:
+            df[col] = pd.NA
+    return df[expected_cols]
+
+
+def salvar_dividas() -> None:
+    """Persist debts list to disk from session state."""
+    save_json(DIVIDAS_FILE, st.session_state.dividas)
+
+
+def carregar_dividas() -> List[Dict[str, Any]]:
+    """Load debts list from disk.
+
+    Returns:
+        List of debt dictionaries from dividas.json.
+    """
+    return load_json(DIVIDAS_FILE, [])
+
+
+def salvar_investimentos() -> None:
+    """Persist investments list to disk from session state."""
+    save_json(INVESTIMENTOS_FILE, st.session_state.investimentos)
+
+
+def carregar_investimentos() -> List[Dict[str, Any]]:
+    """Load investments list from disk.
+
+    Returns:
+        List of investment dictionaries from investimentos.json.
+    """
+    return load_json(INVESTIMENTOS_FILE, [])
+
+
+def salvar_metas_reserva() -> None:
+    """Persist reserve goals list to disk from session state."""
+    save_json(METAS_RESERVA_FILE, st.session_state.metas_reserva)
+
+
+def carregar_metas_reserva() -> List[Dict[str, Any]]:
+    """Load reserve goals list from disk.
+
+    Returns:
+        List of reserve goal dictionaries from metas_reserva.json.
+    """
+    return load_json(METAS_RESERVA_FILE, [])
+
+
 def initialize_session_state() -> None:
     """Initialize all required session state variables.
 
@@ -164,6 +275,18 @@ def initialize_session_state() -> None:
     if "transacoes" not in st.session_state:
         st.session_state.transacoes = carregar_transacoes()
 
+    if "transacoes_importadas" not in st.session_state:
+        st.session_state.transacoes_importadas = carregar_transacoes_importadas()
+
+    if "dividas" not in st.session_state:
+        st.session_state.dividas = carregar_dividas()
+
+    if "investimentos" not in st.session_state:
+        st.session_state.investimentos = carregar_investimentos()
+
+    if "metas_reserva" not in st.session_state:
+        st.session_state.metas_reserva = carregar_metas_reserva()
+
     if "df_transacoes" not in st.session_state:
         st.session_state.df_transacoes = None
 
@@ -177,11 +300,27 @@ def initialize_session_state() -> None:
         st.session_state.column_map = {"date": None, "title": None, "amount": None}
 
     if "orcamento_mensal" not in st.session_state:
-        st.session_state.orcamento_mensal = {
-            cat: 0.0 for cat in st.session_state.categories.keys()
-        }
+        default_orcamento = {cat: 0.0 for cat in st.session_state.categories.keys()}
+        saved_orcamento = carregar_orcamento_mensal()
+        default_orcamento.update(saved_orcamento)
+        st.session_state.orcamento_mensal = default_orcamento
 
     if "despesas_recorrentes" not in st.session_state:
-        st.session_state.despesas_recorrentes = pd.DataFrame(
-            columns=["Descrição", "Valor", "Categoria"]
+        st.session_state.despesas_recorrentes = carregar_despesas_recorrentes()
+
+    if "_despesas_recorrentes_snapshot" not in st.session_state:
+        st.session_state._despesas_recorrentes_snapshot = (
+            st.session_state.despesas_recorrentes.to_dict("records")
         )
+
+    if "renda_liquida" not in st.session_state:
+        st.session_state.renda_liquida = 0.0
+
+    if "tema" not in st.session_state:
+        st.session_state.tema = "Neutro"
+
+    if "bucket_map" not in st.session_state:
+        st.session_state.bucket_map = {}
+
+    if "_ultimo_sonho" not in st.session_state:
+        st.session_state._ultimo_sonho = {}

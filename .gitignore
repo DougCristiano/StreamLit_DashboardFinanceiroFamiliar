@@ -66,6 +66,12 @@ htmlcov/
 categorias.json
 membros.json
 transacoes.json
+transacoes_importadas.json
+orcamento_mensal.json
+despesas_recorrentes.json
+dividas.json
+investimentos.json
+metas_reserva.json
 
 # Logs
 *.log
