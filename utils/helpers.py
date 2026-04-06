@@ -324,3 +324,6 @@ def initialize_session_state() -> None:
 
     if "_ultimo_sonho" not in st.session_state:
         st.session_state._ultimo_sonho = {}
+
+    if "logo_data" not in st.session_state:
+        st.session_state.logo_data = None

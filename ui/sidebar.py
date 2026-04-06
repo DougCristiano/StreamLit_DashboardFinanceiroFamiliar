@@ -13,10 +13,23 @@ def render_sidebar() -> None:
     """Render sidebar with file upload and column mapping interface.
 
     Displays:
+    - Logo at the top
     - File uploader for CSV/XLSX statements
     - Column mapping selection interface
     - Transaction count metric
     """
+
+    # Logo at the very top of sidebar
+    if st.session_state.get("logo_data") is not None:
+        st.sidebar.image(st.session_state.logo_data, use_container_width=True)
+    else:
+        st.sidebar.markdown(
+            """<div style="text-align: center; padding: 12px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border-radius: 8px; margin-bottom: 16px;">
+                <h2 style="color: white; margin: 0; font-size: 1.1rem;">💰 DFF</h2>
+            </div>""",
+            unsafe_allow_html=True,
+        )
 
     st.sidebar.markdown("##### 📂 Importar Extrato")
     st.sidebar.caption("Carregue seu extrato bancário (CSV/XLSX)")

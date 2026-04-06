@@ -19,9 +19,9 @@ TEMAS_DISPONIVEIS = {
 
 
 def render_configuracoes() -> None:
-    """Render settings tab with categories, budget, recurring expenses, and theme."""
-    config_tab1, config_tab2, config_tab3, config_tab4 = st.tabs(
-        ["🏷️ Categorias", "💰 Orçamento", "🔁 Recorrentes", "🎨 Tema"]
+    """Render settings tab with categories, budget, recurring expenses, theme, and logo."""
+    config_tab1, config_tab2, config_tab3, config_tab4, config_tab5 = st.tabs(
+        ["🏷️ Categorias", "💰 Orçamento", "🔁 Recorrentes", "🎨 Tema", "📸 Logo"]
     )
 
     with config_tab1:
@@ -35,6 +35,9 @@ def render_configuracoes() -> None:
 
     with config_tab4:
         _render_tema()
+
+    with config_tab5:
+        _render_logo()
 
 
 def _render_categorias() -> None:
@@ -243,3 +246,44 @@ def _render_tema() -> None:
         "**Claro (Azul)** — tema original com destaque azul  \n"
         "**Escuro** — fundo escuro para uso noturno"
     )
+
+
+def _render_logo() -> None:
+    """Render logo management — upload and change dashboard logo."""
+    st.markdown("##### Logo do Dashboard")
+    st.caption("Customize a logo que aparece no topo da barra lateral.")
+
+    st.write("---")
+    st.subheader("Logo Atual")
+
+    if st.session_state.get("logo_data") is not None:
+        st.image(st.session_state.logo_data, width=200)
+        if st.button("🗑️ Remover Logo", use_container_width=True):
+            st.session_state.logo_data = None
+            st.success("Logo removida! Será usado o logo padrão.")
+            st.rerun()
+    else:
+        st.info("Nenhuma logo customizada. Usando logo padrão.")
+
+    st.write("---")
+    st.subheader("Enviar Nova Logo")
+
+    uploaded_logo = st.file_uploader(
+        "Escolha uma imagem",
+        type=["png", "jpg", "jpeg", "svg", "webp"],
+        help="Formatos aceitos: PNG, JPG, JPEG, SVG, WEBP (máx. 2 MB)",
+    )
+
+    if uploaded_logo is not None:
+        if uploaded_logo.size > 2 * 1024 * 1024:  # 2 MB limit
+            st.error("❌ Arquivo muito grande (máximo 2 MB)")
+        else:
+            col1, col2 = st.columns(2)
+            with col1:
+                st.image(uploaded_logo, width=150, caption="Prévia da nova logo")
+            with col2:
+                st.write("")
+                if st.button("✅ Usar Esta Logo", use_container_width=True):
+                    st.session_state.logo_data = uploaded_logo
+                    st.success("✨ Logo atualizada com sucesso!")
+                    st.rerun()
